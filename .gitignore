@@ -14,3 +14,4 @@ src/layouts/*.c
 src/layouts/*.swp
 src/undo_actions/*.c
 src/undo_actions/*.swp
+ihm/

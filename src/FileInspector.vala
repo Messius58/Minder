@@ -31,14 +31,6 @@ public class NodeData {
     public string node_note;
 }
 
-public class FileData {
-    public string id;
-    public string name;
-    public string path;
-    public bool loaded;
-    public bool showed;// In the actual context not useful maybe latter.
-}
-
 public class FileInspector : Box {
     
     private Gtk.TreeView                _view;
@@ -47,8 +39,7 @@ public class FileInspector : Box {
     private ScrolledWindow              _sw;
     private MainWindow                  _win;
     private GLib.Settings               _settings;
-    private HashTable<string, FileData> _files;
-    private string                      _cur_selected;
+    private HashTable<string, bool>     _files_loaded;
 
     public string directory {
         get {
@@ -67,15 +58,18 @@ public class FileInspector : Box {
         _win.tab_event.connect(highlight_tree);
         _win.preference_changed.connect(settings_changed);
         directory = settings.get_string( "default-directory" );
-        _files = new HashTable<string, FileData>(str_hash, str_equal);
+        _files_loaded = new HashTable<string, bool>(str_hash, str_equal);
 
         init_tree();
 
         show_all();
     }
 
+    /*
+        Create the TreeView and TreeStore
+    */
     private void init_tree() {
-        _tree = new TreeStore(2, typeof(string), typeof(string));
+        _tree = new TreeStore(3, typeof(string), typeof(string), typeof(string));
         _view  = new TreeView();
         _sw = new ScrolledWindow( null, null );
         _sw.min_content_width  = 300;
@@ -89,11 +83,10 @@ public class FileInspector : Box {
         col.pack_start (renderer, true);
         col.set_title(create_title());
         col.add_attribute(renderer, "text", 0);
-        col.add_attribute(renderer, "foreground", 1);
-//        col.set_clickable(true);
-//        col.set_sort_indicator(true);
+        col.add_attribute(renderer, "foreground", 2);
+        col.set_clickable(true);
+        col.set_sort_indicator(true);
         col.set_sort_column_id(0);
-        
         _view.set_model(_tree);
         _view.append_column(col);
         _view.activate_on_single_click = true;
@@ -104,8 +97,11 @@ public class FileInspector : Box {
         load_files(null, default_path);
     }
 
+    /* Loading the files which are localized in the default directory */
     private void load_files( TreeIter? root, string dir_name ) {
         try {
+            if(!FileUtils.test(dir_name, FileTest.IS_DIR))
+            { return; }
             GLib.Dir dir = GLib.Dir.open(dir_name);
             string? name = null;
             TreeIter child_folder;
@@ -114,14 +110,7 @@ public class FileInspector : Box {
                 string path = Path.build_filename (dir_name, name);
                 if (FileUtils.test (path, FileTest.IS_REGULAR) && name.has_suffix(".minder")) {
                     _tree.append(out child_folder, root);
-                    _tree.set(child_folder, 0, name, -1);
-                    FileData ft = new FileData();
-                    ft.name = name;
-                    ft.path = dir_name;
-                    ft.id = _tree.get_string_from_iter(child_folder);
-                    ft.showed = false;
-                    ft.loaded = false;
-                    _files.insert(name, ft);
+                    _tree.set(child_folder, 0, name, 1, dir_name, -1);
                 }
     
                /*if (FileUtils.test (path, FileTest.IS_DIR)) {
@@ -129,7 +118,8 @@ public class FileInspector : Box {
                     _tree.set(child_folder, 0, name, -1);
                     load_files(child_folder, Path.build_filename (path, name));
                 }*/
-            }            
+            }
+            
         } catch (GLib.FileError fe) {
             printerr("FileInspector Load files : " + fe.message);
         }
@@ -138,8 +128,12 @@ public class FileInspector : Box {
     public GLib.List<NodeData> search(string pattern) {
         try {
             GLib.List<NodeData> list = new GLib.List<NodeData>();
-            foreach (var file in _files.get_values()) {
-                string complete_name = Path.build_filename(file.path, file.name);
+            TreeIter it;
+            _tree.get_iter_first(out it);
+            do {
+                string filename = "", pathfile = "";
+                _tree.get(it, 0, filename, 1, pathfile, -1);
+                string complete_name = Path.build_filename(pathfile, filename);
                 Xml.Doc* doc = Xml.Parser.parse_file( complete_name );
                 if (doc != null) {
                     Xml.XPath.Context cntx = new Xml.XPath.Context(doc);
@@ -165,12 +159,11 @@ public class FileInspector : Box {
                                 node_note = note
                             });
                         }
-                        //print ("%s\n", node->get_prop("data"));
                     }
                     delete res;
                     delete doc;        
                 }
-            }
+            }while(_tree.iter_next(ref it));
             return list;
         }catch (Error e) {
             printerr("error in function search / inspector" + e.message);
@@ -203,17 +196,14 @@ public class FileInspector : Box {
   /* Get the selected file and open it */
   private void on_row_activated( TreePath path, TreeViewColumn col ) {
     TreeIter iter;
-    string select_name = "";
+    string filename = "", pathfile = "";
     _tree.get_iter(out iter, path);
-    _tree.get(iter, 0, &select_name);
-    if(select_name != null) {
-        FileData ft = _files.get(select_name);
-        if(!ft.loaded) {
-            string complete_name = Path.build_filename(ft.path, ft.name);
-            _win.open_file(complete_name);
-        }else{
-            _win.action_change_tab(select_name);
-        }
+    _tree.get(iter, 0, &filename, 1, &pathfile, -1);
+    if(!_files_loaded.contains(filename)){
+        _win.open_file(Path.build_filename(pathfile, filename));
+        _files_loaded.insert(filename, true);
+    }else{
+        _win.action_change_tab(filename);
     }
 }
 
@@ -224,8 +214,8 @@ public class FileInspector : Box {
 
   public bool file_is_loading(string pathfile) {
       string filename = Path.get_basename(pathfile);
-      if(_files.contains(filename)) {
-          return _files.get(filename).loaded;
+      if(_files_loaded.contains(filename)) {
+          return _files_loaded.get(filename);
       }
       return false;
   }
@@ -237,31 +227,39 @@ public class FileInspector : Box {
   }
 
   /* 
-  on tab event : update the text color of the file in the treebox 
-  TODO on treeview sort recreate the file index list.
+      on tab event : update the text color of the file in the treebox 
   */
   private void highlight_tree(string fname, TabReason reason) {
     string basename = Path.get_basename(fname);
-    if(_files.contains(basename)) {
-        TreeIter it;
-        FileData ft = _files.get(basename);
+    string filename = "";
+    TreeIter it;
+    _tree.get_iter_first(out it);
+    do{
+        _tree.get(it, 0, &filename, -1);
+        if(basename == filename){
+            break;
+        }
+    }while (_tree.iter_next(ref it));
+    if(it.stamp != 0){
         TreeViewColumn col = _view.get_column(0);
-        _tree.get_iter_from_string(out it, ft.id);
         switch (reason) {
             case TabReason.LOAD:
-            case TabReason.SHOW:
-                ft.loaded = true;
-                ft.showed = true;
-                _tree.set_value(it, 1, "#ff5733");
-                if(ft.id != _cur_selected) {
-                    _cur_selected = ft.id;
-                    _view.set_cursor(_tree.get_path(it), col, true);
+                _tree.set(it, 2, "#ff5733", -1);
+                if(!_files_loaded.contains(filename)) {
+                    _files_loaded.insert(filename, true);
+                }else{
+                    _files_loaded.set(filename, true);
                 }
+                _view.set_cursor(_tree.get_path(it), col, true);
+            break;
+            case TabReason.SHOW:
+                _view.set_cursor(_tree.get_path(it), col, true);
             break;
             case TabReason.CLOSE:
-                ft.loaded = false;
-                ft.showed = false;
-                _tree.set_value(it, 1, "#FFFFFF");
+                _tree.set_value(it, 2, "#FFFFFF");
+                if(_files_loaded.contains(filename)) {
+                    _files_loaded.set(filename, false);
+                }
             break;
             default:
             break;
