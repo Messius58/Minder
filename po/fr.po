@@ -657,7 +657,7 @@ msgstr "Carte"
 
 #: src/MainWindow.vala:825
 msgid "Explorer"
-msgstr ""
+msgstr "Explorateur"
 
 #: src/MainWindow.vala:877
 msgid "Save current unnamed document?"
@@ -786,7 +786,7 @@ msgstr "Couper"
 
 #: src/NodeMenu.vala:81 src/NodeMenu.vala:421
 msgid "Paste and Replace Node"
-msgstr ""
+msgstr "Coller et replacer le nœud"
 
 #: src/NodeMenu.vala:88
 msgid "Delete Single Node"
@@ -815,11 +815,11 @@ msgstr "Ajouter une connexion"
 
 #: src/NodeMenu.vala:118
 msgid "Add Group"
-msgstr ""
+msgstr "Ajouter un groupe"
 
 #: src/NodeMenu.vala:125 src/NodesMenu.vala:72
 msgid "Set to color…"
-msgstr ""
+msgstr "Choisir une couleur..."
 
 #: src/NodeMenu.vala:128
 #, fuzzy
@@ -828,7 +828,7 @@ msgstr "Aléatoirement"
 
 #: src/NodeMenu.vala:131 src/NodesMenu.vala:78
 msgid "Use parent color"
-msgstr ""
+msgstr "Utiliser la couleur parent"
 
 #: src/NodeMenu.vala:135 src/NodeMenu.vala:397 src/NodesMenu.vala:58
 #: src/NodesMenu.vala:203
@@ -893,7 +893,7 @@ msgstr "Nœud enfant"
 
 #: src/NodeMenu.vala:202
 msgid "Subtree"
-msgstr ""
+msgstr "Sous-répertoire"
 
 #: src/NodeMenu.vala:207
 msgid "Parent Node"
@@ -1000,27 +1000,27 @@ msgstr "Équilibrer les nœuds"
 
 #: src/NodesMenu.vala:109
 msgid "Align Top"
-msgstr ""
+msgstr "Aligner en haut"
 
 #: src/NodesMenu.vala:113 data/com.github.phase1geo.minder.shortcuts.ui:481
 msgid "Align Center Horizontally"
-msgstr ""
+msgstr "Centrer horizontalement"
 
 #: src/NodesMenu.vala:117
 msgid "Align Bottom"
-msgstr ""
+msgstr "Aligner en bas"
 
 #: src/NodesMenu.vala:121
 msgid "Align Left"
-msgstr ""
+msgstr "Aligner à gauche"
 
 #: src/NodesMenu.vala:125 data/com.github.phase1geo.minder.shortcuts.ui:502
 msgid "Align Center Vertically"
-msgstr ""
+msgstr "Centrer verticalement"
 
 #: src/NodesMenu.vala:129
 msgid "Align Right"
-msgstr ""
+msgstr "Aligner à droite"
 
 #: src/Node.vala:1776
 msgid "Node Title"
@@ -1042,11 +1042,11 @@ msgstr ""
 
 #: src/QuickEntry.vala:60
 msgid "Tab"
-msgstr ""
+msgstr "Onglet"
 
 #: src/QuickEntry.vala:61
 msgid "Creates a child node of the previous node."
-msgstr ""
+msgstr "Créer un nœud enfant du précédent nœud"
 
 #: src/QuickEntry.vala:63
 msgid ""
@@ -1180,11 +1180,11 @@ msgstr "Épaisseur de ligne"
 
 #: src/Styles.vala:51
 msgid "Solid"
-msgstr ""
+msgstr "Plein"
 
 #: src/Styles.vala:52
 msgid "Dotted"
-msgstr ""
+msgstr "Pointillé"
 
 #: src/Styles.vala:53
 #, fuzzy
@@ -1237,15 +1237,15 @@ msgstr ""
 
 #: src/ThemeEditor.vala:80
 msgid "Base Colors"
-msgstr ""
+msgstr "Couleurs de base"
 
 #: src/ThemeEditor.vala:85
 msgid "Background"
-msgstr ""
+msgstr "Arrière-plan"
 
 #: src/ThemeEditor.vala:86
 msgid "Foreground"
-msgstr ""
+msgstr "Couleur de texte"
 
 #: src/ThemeEditor.vala:87
 #, fuzzy
@@ -1325,11 +1325,11 @@ msgstr "Markdown"
 
 #: src/ThemeEditor.vala:109
 msgid "Prefer Dark Mode"
-msgstr ""
+msgstr "Mode sombre"
 
 #: src/ThemeEditor.vala:192
 msgid "Custom"
-msgstr ""
+msgstr "Personnalisé"
 
 #: src/ThemeEditor.vala:210
 #, fuzzy
@@ -1343,11 +1343,11 @@ msgstr ""
 #: src/ThemeEditor.vala:216
 #, fuzzy
 msgid "No"
-msgstr "Note"
+msgstr "Non"
 
 #: src/ThemeEditor.vala:219
 msgid "Yes"
-msgstr ""
+msgstr "Oui"
 
 #: src/UndoBuffer.vala:85
 msgid "Undo "

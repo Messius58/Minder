@@ -38,6 +38,13 @@ public enum PropertyGrab {
   TEXT
 }
 
+public enum MinderFileEvent {
+  OPEN,
+  SAVE,
+  SAVE_AS,
+  CLOSE
+}
+
 public class MainWindow : ApplicationWindow {
 
   private const string DESKTOP_SCHEMA = "io.elementary.desktop";
@@ -130,7 +137,7 @@ public class MainWindow : ApplicationWindow {
 
   public signal void canvas_changed( DrawArea? da );
 
-  public signal void file_loaded( string fname );
+  public signal void file_event( string fname, MinderFileEvent filevent);
 
   public signal void tab_event( string tabname, TabReason reason );
 
@@ -973,7 +980,7 @@ public class MainWindow : ApplicationWindow {
       var da = add_tab_conditionally( fname, TabReason.OPEN );
       update_title( da );
       da.get_doc().load();
-      file_loaded(fname);
+      file_event(fname, MinderFileEvent.OPEN);
       return( true );
     } else {
       for( int i=0; i<exports.length(); i++ ) {
@@ -1489,7 +1496,7 @@ public class MainWindow : ApplicationWindow {
         var da    = add_tab( fname, TabReason.LOAD );
         da.get_doc().load_filename( fname, bool.parse( saved ) );
         da.get_doc().load();
-        file_loaded(fname);
+        file_event(fname, MinderFileEvent.OPEN);
       }
     }
 

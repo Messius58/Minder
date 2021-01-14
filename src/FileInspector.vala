@@ -54,7 +54,7 @@ public class FileInspector : Box {
         Object( orientation:Orientation.VERTICAL, spacing:10 );
         _settings = settings;
         _win = win;
-        _win.file_loaded.connect(file_loaded);
+        _win.file_event.connect(file_event);
         _win.tab_event.connect(highlight_tree);
         _win.preference_changed.connect(settings_changed);
         directory = settings.get_string( "default-directory" );
@@ -126,13 +126,13 @@ public class FileInspector : Box {
     }
 
     public GLib.List<NodeData> search(string pattern) {
+        GLib.List<NodeData> list = new GLib.List<NodeData>();
         try {
-            GLib.List<NodeData> list = new GLib.List<NodeData>();
             TreeIter it;
             _tree.get_iter_first(out it);
             do {
                 string filename = "", pathfile = "";
-                _tree.get(it, 0, filename, 1, pathfile, -1);
+                _tree.get(it, 0, &filename, 1, &pathfile, -1);
                 string complete_name = Path.build_filename(pathfile, filename);
                 Xml.Doc* doc = Xml.Parser.parse_file( complete_name );
                 if (doc != null) {
@@ -164,10 +164,10 @@ public class FileInspector : Box {
                     delete doc;        
                 }
             }while(_tree.iter_next(ref it));
-            return list;
         }catch (Error e) {
             printerr("error in function search / inspector" + e.message);
         }
+        return list;
     }
 
   /* Grabs input focus on the first UI element */
@@ -208,7 +208,7 @@ public class FileInspector : Box {
 }
 
   /* On file loaded : highlight the selected file */
-  private void file_loaded(string fname) {
+  private void file_event(string fname) {
       highlight_tree(fname, TabReason.LOAD);
   }
 
@@ -234,6 +234,8 @@ public class FileInspector : Box {
     string filename = "";
     TreeIter it;
     _tree.get_iter_first(out it);
+    if(it.stamp == 0)
+    { return; }
     do{
         _tree.get(it, 0, &filename, -1);
         if(basename == filename){
@@ -253,7 +255,8 @@ public class FileInspector : Box {
                 _view.set_cursor(_tree.get_path(it), col, true);
             break;
             case TabReason.SHOW:
-                _view.set_cursor(_tree.get_path(it), col, true);
+            _tree.set(it, 2, "#ff5733", -1);
+            _view.set_cursor(_tree.get_path(it), col, true);
             break;
             case TabReason.CLOSE:
                 _tree.set_value(it, 2, "#FFFFFF");
