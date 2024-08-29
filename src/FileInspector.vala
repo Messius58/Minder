@@ -93,6 +93,7 @@ public class FileInspector : Box {
         _view.headers_visible = true;
         _view.enable_search = true;
         _view.row_activated.connect( on_row_activated );
+        _tree.clear();
 
         load_files(null, default_path);
     }
@@ -105,7 +106,6 @@ public class FileInspector : Box {
             GLib.Dir dir = GLib.Dir.open(dir_name);
             string? name = null;
             TreeIter child_folder;
-            _tree.clear();
             while ((name = dir.read_name ()) != null) {
                 string path = Path.build_filename (dir_name, name);
                 if (FileUtils.test (path, FileTest.IS_REGULAR) && name.has_suffix(".minder")) {
@@ -113,11 +113,13 @@ public class FileInspector : Box {
                     _tree.set(child_folder, 0, name, 1, dir_name, -1);
                 }
     
-               /*if (FileUtils.test (path, FileTest.IS_DIR)) {
-                    _tree.prepend(out child_folder, root);
-                    _tree.set(child_folder, 0, name, -1);
-                    load_files(child_folder, Path.build_filename (path, name));
-                }*/
+               if (FileUtils.test (path, FileTest.IS_DIR)) {
+                   if(name[0] != '.') { 
+                        _tree.prepend(out child_folder, root);
+                        _tree.set(child_folder, 0, name, 1, dir_name, -1);
+                        load_files(child_folder, Path.build_filename (path, ""));
+                    }
+                }
             }
             
         } catch (GLib.FileError fe) {
@@ -161,7 +163,7 @@ public class FileInspector : Box {
                         }
                     }
                     delete res;
-                    delete doc;        
+                    delete doc;
                 }
             }while(_tree.iter_next(ref it));
         }catch (Error e) {
